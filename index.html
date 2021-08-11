@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>javascript</title>
+    <meta name="description" content="site">
+    <style> 
+        .collect {
+            display: flex;
+            list-style: none;
+        }
+
+        .list {
+            display: flex;
+            list-style: none;
+        }
+
+        .list li {
+            width: 100px;
+        }
+
+        .border-color:hover {
+            outline: solid 2px skyblue;
+        }
+
+        .add-list {
+            list-style: none;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>ToDoリスト</h1>
+    <form id="collect">
+        <label for="all"><input id="all" type="radio" name="radio" value="1" checked>全て</label>
+        <label for="work"><input id="work" type="radio" name="radio" value="1">作業中</label>
+        <label for="complete"><input id="complete" type="radio" name="radio" value="1">完了</label>
+
+    </form>
+
+
+
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>コメント</th>
+                <th>状態</th>
+            </tr>
+        </thead>
+        <tbody id="add-list">
+
+        </tbody>
+    </table>
+    <h2>新規タスクの追加</h2>
+    <div>
+        <input type="text" class="border-color " id="js-input" />
+        <button id="btn">追加</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const button = document.getElementById('btn');
+            const lists = [];
+            const btnWork = document.createElement('button');
+            const jsInput = document.getElementById('js-input');
+            const radioButtonAll = document.getElementById('all');
+            const radioButtonWorking = document.getElementById('work');
+            const radioButtonDone = document.getElementById('complete');
+            const stateWork = '作業中';
+            const stateDone = '完了';
+
+            button.addEventListener('click', function () {
+                const todo = { id: lists.length + 1, comment: jsInput.value, state: stateWork };
+                lists.push(todo);
+                clearList();
+                createList();
+                if (radioButtonWorking.checked) {
+                    workChecked();
+                }
+                if (radioButtonDone.checked) {
+                    doneChecked();
+                }
+            });
+
+            function clearList() {
+                const list = document.getElementById('add-list');
+                while (list.firstChild) {
+                    list.removeChild(list.firstChild);
+                }
+            }
+
+            function createList() {
+                lists.map((todo) => {
+                    console.log(todo.state);
+                    createTodo(todo, todo.state);
+                });
+            }
+
+            function createListByStatus(status) {
+                lists.map((todo) => {
+                    if (todo.state === status) {
+                        createTodo(todo, todo.state);
+                    }
+                });
+            }
+            function workChecked() {
+                clearList();
+                createListByStatus('作業中');
+            }
+            function doneChecked() {
+                clearList();
+                createListByStatus('完了');
+            }
+            radioButtonWorking.addEventListener('change', () => {
+                workChecked();
+            });
+            radioButtonDone.addEventListener('change', () => {
+                doneChecked();
+            });
+            radioButtonAll.addEventListener('change', () => {
+                clearList()
+                createList()
+            });
+
+            function createTodo(todo, stateElement) {
+                const addList = document.getElementById('add-list');
+                const tableRecord = document.createElement('tr');
+                const tableId = document.createElement('td');
+                const jsInput = document.getElementById('js-input');
+                const tableComment = document.createElement('td');
+                const createButtonTd = document.createElement('td');
+                const id = "td-" + todo.id;
+                let createButtonState = stateElement;
+
+                createButtonTd.id = id;
+                tableId.textContent = todo.id;
+                tableComment.textContent = todo.comment;
+                jsInput.value = '';
+                tableRecord.appendChild(tableId);
+                tableRecord.appendChild(tableComment);
+                addList.appendChild(tableRecord);
+                tableRecord.appendChild(createButtonTd);
+                btnWorkCreate(id, todo.id, createButtonState);
+                btnDeleteCreate(id, todo.id);
+            }
+            function btnWorkCreate(id, index, createButtonState) {
+                const btnWork = document.createElement('button');
+                btnWork.textContent = createButtonState;
+                const buttonTd = document.getElementById(id);
+                buttonTd.appendChild(btnWork);
+                buttonTd.addEventListener('click', function (e) {
+                    lists.forEach((todo, i) => {
+                        if (e.target.textContent === stateWork) {
+                            if (lists[i+1].state === stateWork) {
+                                lists[i+1].state = stateDone;
+                                e.target.textContent = stateDone;
+                            }
+                        } else { 
+                            if (e.target.textContent === stateDone) {
+                                if (lists[i+1].state === stateDone) {
+                                    lists[i+1].state = stateWork;
+                                    e.target.textContent = stateWork;
+                                }
+                            }
+                        }
+                    });
+
+                    if (radioButtonAll.checked) {
+                        clearList();
+                        createList()
+                        return;
+                    }
+                    if (radioButtonWorking.checked) {
+                        workChecked();
+                    }
+                    if (radioButtonDone.checked) {
+                        doneChecked();
+                    }
+
+                });
+            };
+
+            function btnDeleteCreate(id, index) {
+                const btnDelete = document.createElement('button');
+                btnDelete.textContent = '削除';
+                const buttonTd = document.getElementById(id);
+                btnDelete.dataset.id = index;
+
+                buttonTd.appendChild(btnDelete);
+                btnDelete.onclick = function () {
+                    lists.splice(this.dataset.id - 1, 1);
+                    lists.forEach((value, index) => {
+                        lists[index].id = index + 1;
+                    });
+                    clearList();
+                    createList();
+                };
+            };
+        });
+    </script>
+</body>
+</html>
